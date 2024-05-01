@@ -17,22 +17,19 @@ def register(request):
             return redirect('register')
 
         if User.objects.filter(username=username).exists():
-            messages.error(
-                request, 'A user with that username already exists.')
+            messages.error(request, 'A user with that username already exists.')
             return redirect('register')
 
         user = User.objects.create_user(
             username=username, email=email, password=password, first_name=first_name)
         messages.success(
             request, 'Registration successful. You can now log in.')
-        return redirect('home')
+        return redirect('login')
 
     return render(request, 'register.html', {
         'page': 'register',
     })
-
-
-def login_page(request):
+def login_view(request):
     if request.method == 'POST':
         username = request.POST.get('username')
         password = request.POST.get('password')
@@ -50,6 +47,9 @@ def login_page(request):
         'page': 'login',
     }
     return render(request, 'login.html', context)
+def logout_view(request):
+    return redirect('login')
+
 
 
 def home(request):

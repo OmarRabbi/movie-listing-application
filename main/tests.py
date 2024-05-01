@@ -1,6 +1,8 @@
 from django.test import TestCase
 from django.urls import reverse
 from django.contrib.auth.models import User
+from .models import Movie, Favorite
+from datetime import date
 
 class RegistrationViewTest(TestCase):
     def test_register_view_exists(self):
@@ -15,7 +17,7 @@ class RegistrationViewTest(TestCase):
             'password': 'testpassword'
         }
         response = self.client.post(reverse('register'), data, follow=True)
-        self.assertRedirects(response, reverse('home'))
+        self.assertRedirects(response, reverse('login'))
         
         # Check if the user is created
         self.assertTrue(User.objects.filter(username='test01').exists())
@@ -85,3 +87,45 @@ class LoginViewTest(TestCase):
         }
         response = self.client.post(reverse('login'), data, follow=True)
         self.assertContains(response, 'Invalid username or password.')
+
+class MovieModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Set up non-modified objects used by all test methods
+        Movie.objects.create(
+            title='Test Movie',
+            description='This is a test movie',
+            director='Test Director',
+            cast='Test Cast',
+            genre='A',  # Assuming 'A' represents 'ACTION'
+            category='TR',  # Assuming 'TR' represents 'TOP RATED'
+            budget=1000000.00,
+            release_date=date(2022, 1, 1),
+            poster='http://example.com/poster.jpg'
+        )
+
+    def test_movie_str(self):
+        movie = Movie.objects.get(id=1)
+        self.assertEqual(movie.__str__(), 'Test Movie')
+
+class FavoriteModelTest(TestCase):
+    @classmethod
+    def setUpTestData(cls):
+        # Set up non-modified objects used by all test methods
+        user = User.objects.create_user(username='testuser', password='12345')
+        movie = Movie.objects.create(
+            title='Test Movie',
+            description='This is a test movie',
+            director='Test Director',
+            cast='Test Cast',
+            genre='A',  # Assuming 'A' represents 'ACTION'
+            category='TR',  # Assuming 'TR' represents 'TOP RATED'
+            budget=1000000.00,
+            release_date=date(2022, 1, 1),
+            poster='http://example.com/poster.jpg'
+        )
+        Favorite.objects.create(user=user, movie=movie)
+
+    def test_favorite_str(self):
+        favorite = Favorite.objects.get(id=1)
+        self.assertEqual(favorite.__str__(), 'testuser\'s favorite: Test Movie')
